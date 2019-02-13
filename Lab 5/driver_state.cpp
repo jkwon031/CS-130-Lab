@@ -20,6 +20,13 @@ void initialize_render(driver_state& state, int width, int height)
     state.image_height=height;
     state.image_color=0;
     state.image_depth=0;
+    
+    int length = width * height;
+    state.image_color = new pixel[length];
+
+    for(int i = 0; i < length; i++){
+	state.image_color[i] = make_pixel(0, 0, 0);
+    }
     std::cout<<"TODO: allocate and initialize state.image_color and state.image_depth."<<std::endl;
 }
 
