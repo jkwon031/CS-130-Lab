@@ -118,14 +118,14 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
    int px = 0;
    int py = 0;
 
-   int AREAabc = 0;
-   int AREApbc = 0;
-   int AREAapc = 0;
-   int AREAabp = 0;
+   float AREAabc = 0;
+   float AREApbc = 0;
+   float AREAapc = 0;
+   float AREAabp = 0;
 
-   int alpha = 0;
-   int beta = 0;
-   int gamma = 0;
+   float alpha = 0;
+   float beta = 0;
+   float gamma = 0;
 
   
   data_vertex v;
@@ -135,8 +135,8 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 
 	state.vertex_shader(v, out[index], state.uniform_data);
 
-	//out[index].gl_Position[0] /= out[index].gl_Position[3];
-	//out[index].gl_Position[1] /= out[index].gl_Position[3];
+	out[index].gl_Position[0] /= out[index].gl_Position[3];
+	out[index].gl_Position[1] /= out[index].gl_Position[3];
   
   i = w/2.0 * out[index].gl_Position[0] + w/2.0 - (0.5);
   j = h/2.0 * out[index].gl_Position[1] + h/2.0 - (0.5);
@@ -146,11 +146,13 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
   }
 
    ax = (w/2.0)*out[0].gl_Position[0] + (w/2.0) - (0.5);
-   ay = (w/2.0)*out[0].gl_Position[1] + (w/2.0) - (0.5);
+   ay = (h/2.0)*out[0].gl_Position[1] + (h/2.0) - (0.5);
    bx = (w/2.0)*out[1].gl_Position[0] + (w/2.0) - (0.5);
-   by = (w/2.0)*out[1].gl_Position[1] + (w/2.0) - (0.5);
+   by = (h/2.0)*out[1].gl_Position[1] + (h/2.0) - (0.5);
    cx = (w/2.0)*out[2].gl_Position[0] + (w/2.0) - (0.5);
-   cy = (w/2.0)*out[2].gl_Position[1] + (w/2.0) - (0.5);
+   cy = (h/2.0)*out[2].gl_Position[1] + (h/2.0) - (0.5);
+
+   //std::cout << ax << " " << ay << " " << bx << " " << by << " " << cx << " " << cy << std::endl;
 
    AREAabc = 0.5 * (ax * (by - cy)) + (bx * (cy - ay)) + (cx * (ay - by));
 
@@ -164,6 +166,9 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 		alpha = AREApbc / AREAabc;
 		beta = AREAapc / AREAabc;
 		gamma = AREAabp / AREAabc;
+
+
+		//std::cout << alpha << " " << beta << " " << gamma << std::endl;		
 
 		image_index = px + py * w;
 
