@@ -91,7 +91,7 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
    int h = state.image_height;
    int i = 0;
    int j = 0;
-   int image_index = 0;
+   unsigned int image_index = 0;
 
    int ax = 0;
    int ay = 0;
@@ -129,17 +129,35 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 	state.image_color[image_index] = make_pixel(255, 255, 255);
    }
 
-   ax = (w/2.0)*out[0].gl_Position[0] + (w/2.0) + (0.5);
-   ay = (w/2.0)*out[0].gl_Position[1] + (w/2.0) + (0.5);
-   bx = (w/2.0)*out[1].gl_Position[0] + (w/2.0) + (0.5);
-   by = (w/2.0)*out[1].gl_Position[1] + (w/2.0) + (0.5);
-   cx = (w/2.0)*out[2].gl_Position[0] + (w/2.0) + (0.5);
-   cy = (w/2.0)*out[2].gl_Position[1] + (w/2.0) + (0.5);
-
-   px = i;
-   py = j;
+   ax = (w/2.0)*out[0].gl_Position[0] + (w/2.0) - (0.5);
+   ay = (w/2.0)*out[0].gl_Position[1] + (w/2.0) - (0.5);
+   bx = (w/2.0)*out[1].gl_Position[0] + (w/2.0) - (0.5);
+   by = (w/2.0)*out[1].gl_Position[1] + (w/2.0) - (0.5);
+   cx = (w/2.0)*out[2].gl_Position[0] + (w/2.0) - (0.5);
+   cy = (w/2.0)*out[2].gl_Position[1] + (w/2.0) - (0.5);
 
    AREAabc = 0.5 * (ax * (by - cy)) + (bx * (cy - ay)) + (cx * (ay - by));
+
+
+   for(px = 0; px < w; px++){
+	for(py = 0; py < h; py++){
+		AREApbc = 0.5 * (px * (by - cy)) + (bx * (cy - py)) + (cx * (px - by));
+   		AREAapc = 0.5 * (ax * (py - cy)) + (px * (cy - ay)) + (cx * (ay - py));
+   		AREAabp = 0.5 * (ax * (by - py)) + (bx * (py - ay)) + (px * (ay - by));
+		
+		alpha = AREApbc / AREAabc;
+		beta = AREAapc / AREAabc;
+		gamma = AREAabp / AREAabc;
+
+		image_index = px + py * w;
+
+		if(alpha >= 0 && beta >= 0 && gamma >= 0){
+			state.image_color[image_index] = make_pixel(255, 255, 255);
+		}
+	}
+   }
+
+   /*AREAabc = 0.5 * (ax * (by - cy)) + (bx * (cy - ay)) + (cx * (ay - by));
 
    AREApbc = 0.5 * (px * (by - cy)) + (bx * (cy - py)) + (cx * (px - by));
    AREAapc = 0.5 * (ax * (py - cy)) + (px * (cy - ay)) + (cx * (ay - py));
@@ -152,7 +170,7 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
    if(alpha >= 0 && beta >= 0 && gamma >= 0){
 	state.image_color[image_index] = make_pixel(255, 255, 255);	
    }		
-   
+   */
 std::cout<<"TODO: implement rasterization"<<std::endl;
 
 }
