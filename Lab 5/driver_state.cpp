@@ -39,6 +39,29 @@ void initialize_render(driver_state& state, int width, int height)
 //   render_type::strip -    The vertices are to be interpreted as a triangle strip.
 void render(driver_state& state, render_type type)
 {
+
+    switch(type){
+	case render_type::triangle:
+		for(int i = 0; i < state.num_vertices; i+=3){
+			data_geometry** tri = new data_geometry*[3];
+			for(int j = 0; j < 3; j++){
+				tri[j]->data = new float[MAX_FLOATS_PER_VERTEX];
+				for(int k = 0; k < state.floats_per_vertex; k++){
+					tri[j]->data[k] = state.vertex_data[i+j+k];
+				}
+			}
+			rasterize_triangle(state,(const data_geometry**)tri);
+		}
+		break;
+	case render_type::indexed:
+		break;
+	case render_type::fan:
+		break;
+	case render_type::strip:
+		break;
+	default:
+		break;
+    }
     std::cout<<"TODO: implement rendering."<<std::endl;
 }
 
@@ -63,6 +86,14 @@ void clip_triangle(driver_state& state, const data_geometry* in[3],int face)
 // fragments, calling the fragment shader, and z-buffering.
 void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 {
+   data_geometry* out = new data_geometry[3];
+   for(int i = 0; i < 3; i++){
+	data_vertex* v;
+	v->data = in[i]->data;
+	const data_vertex* constV = v;
+	
+	state.vertex_shader(*constV, out[i], state.uniform_data);	
+   }  
     std::cout<<"TODO: implement rasterization"<<std::endl;
 }
 
