@@ -39,18 +39,33 @@ void initialize_render(driver_state& state, int width, int height)
 //   render_type::strip -    The vertices are to be interpreted as a triangle strip.
 void render(driver_state& state, render_type type)
 {
-
     switch(type){
 	case render_type::triangle:
-		for(int i = 0; i < state.num_vertices; i+=3){
-			data_geometry** tri = new data_geometry*[3];
-			for(int j = 0; j < 3; j++){
-				tri[j]->data = new float[MAX_FLOATS_PER_VERTEX];
-				for(int k = 0; k < state.floats_per_vertex; k++){
-					tri[j]->data[k] = state.vertex_data[i+j+k];
-				}
+		for(int i = 0; i < state.num_vertices; i += 3){
+			const data_geometry** tri = new const data_geometry*[3];
+			
+			tri[0] = new data_geometry;
+			tri[1] = new data_geometry;
+			tri[2] = new data_geometry;
+
+
+			const_cast<data_geometry*>(tri[0])->data = new float[MAX_FLOATS_PER_VERTEX];
+			const_cast<data_geometry*>(tri[1])->data = new float[MAX_FLOATS_PER_VERTEX];
+			const_cast<data_geometry*>(tri[2])->data = new float[MAX_FLOATS_PER_VERTEX];
+			for(int j = 0; j < state.floats_per_vertex; j++){
+				tri[0]->data[j] = state.vertex_data[j + (state.floats_per_vertex * i)];
+				tri[1]->data[j] = state.vertex_data[j + (state.floats_per_vertex * (i + 1))];
+				tri[2]->data[j] = state.vertex_data[j + (state.floats_per_vertex * (i + 2))];
 			}
-			rasterize_triangle(state,(const data_geometry**)tri);
+			rasterize_triangle(state,tri);
+
+			delete [] tri[0]->data;
+			delete [] tri[1]->data;
+			delete [] tri[2]->data;
+			delete tri[0];
+			delete tri[1];
+			delete tri[2];
+			delete [] tri;
 		}
 		break;
 	case render_type::indexed:
@@ -112,22 +127,49 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
    int beta = 0;
    int gamma = 0;
 
-   for(int index = 0; index < 3; index++){
-	data_vertex* v = 0;
+  
+  data_vertex* v = 0;
+  
+  for(int index = 0; index < 3; index++){
 	v->data = in[index]->data;
 	const data_vertex* constV = v;
-	
-	state.vertex_shader(*constV, out[index], state.uniform_data);	
+
+	state.vertex_shader(*constV, out[index], state.uniform_data);
 
 	out[index].gl_Position[0] /= out[index].gl_Position[3];
 	out[index].gl_Position[1] /= out[index].gl_Position[3];
+  /*int coord[3][2];
+  for(int index = 0; index < 3; index++){
+  	v.data = in[index]->data;
+  	state.vertex_shader(v, *const_cast<data_geometry*>(in[index]), state.uniform_data);	
+	const_cast<data_geometry*>(in[index])->gl_Position /= in[index]->gl_Position[3];
+  	coord[index][0] = ((in[index]->gl_Position[0] * w/2) * (w/2 - 0.5));
+	coord[index][1] = ((in[index]->gl_Position[1] * h/2) * (h/2 - 0.5));
+  }
 
-	i = w/2.0 * out[index].gl_Position[0] + w/2.0 - (0.5);
-	j = h/2.0 * out[index].gl_Position[1] + h/2.0 - (0.5);
+  std::swap(coord[0], coord[2]);
 
-	image_index = i + j * w;
-	state.image_color[image_index] = make_pixel(255, 255, 255);
-   }
+  int maxX = std::max(coord[0][0], coord[1][0];
+  maxX = std::max(coord[2][0], maxX);
+
+  int maxY = std::max(coord[0][1], coord[1][1];
+  maxY = std::max(coord[2][1], maxY);
+
+  int minX = std::min(coord[0][0], coord[1][0];
+  minX = std::min(coord[2][0], minX);
+
+  int minY = std::min(coord[0][1], coord[1][1];
+  minY = std::min(coord[2][1], minY);
+
+  int AREAabc = 0.5 *
+  ( (coord[1][0] * coord[2][1]
+  */
+  i = w/2.0 * out[index].gl_Position[0] + w/2.0 - (0.5);
+  j = h/2.0 * out[index].gl_Position[1] + h/2.0 - (0.5);
+
+  image_index = i + j * w;
+  state.image_color[image_index] = make_pixel(255, 255, 255);
+  }
 
    ax = (w/2.0)*out[0].gl_Position[0] + (w/2.0) - (0.5);
    ay = (w/2.0)*out[0].gl_Position[1] + (w/2.0) - (0.5);
