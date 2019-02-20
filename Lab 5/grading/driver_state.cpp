@@ -128,13 +128,12 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
    int gamma = 0;
 
   
-  data_vertex* v = 0;
+  data_vertex v;
   
   for(int index = 0; index < 3; index++){
-	v->data = in[index]->data;
-	const data_vertex* constV = v;
+	v.data = in[index]->data;
 
-	state.vertex_shader(*constV, out[index], state.uniform_data);
+	state.vertex_shader(v, out[index], state.uniform_data);
 
 	out[index].gl_Position[0] /= out[index].gl_Position[3];
 	out[index].gl_Position[1] /= out[index].gl_Position[3];
