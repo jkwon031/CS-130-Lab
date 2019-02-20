@@ -135,34 +135,9 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 
 	state.vertex_shader(v, out[index], state.uniform_data);
 
-	out[index].gl_Position[0] /= out[index].gl_Position[3];
-	out[index].gl_Position[1] /= out[index].gl_Position[3];
-  /*int coord[3][2];
-  for(int index = 0; index < 3; index++){
-  	v.data = in[index]->data;
-  	state.vertex_shader(v, *const_cast<data_geometry*>(in[index]), state.uniform_data);	
-	const_cast<data_geometry*>(in[index])->gl_Position /= in[index]->gl_Position[3];
-  	coord[index][0] = ((in[index]->gl_Position[0] * w/2) * (w/2 - 0.5));
-	coord[index][1] = ((in[index]->gl_Position[1] * h/2) * (h/2 - 0.5));
-  }
-
-  std::swap(coord[0], coord[2]);
-
-  int maxX = std::max(coord[0][0], coord[1][0];
-  maxX = std::max(coord[2][0], maxX);
-
-  int maxY = std::max(coord[0][1], coord[1][1];
-  maxY = std::max(coord[2][1], maxY);
-
-  int minX = std::min(coord[0][0], coord[1][0];
-  minX = std::min(coord[2][0], minX);
-
-  int minY = std::min(coord[0][1], coord[1][1];
-  minY = std::min(coord[2][1], minY);
-
-  int AREAabc = 0.5 *
-  ( (coord[1][0] * coord[2][1]
-  */
+	//out[index].gl_Position[0] /= out[index].gl_Position[3];
+	//out[index].gl_Position[1] /= out[index].gl_Position[3];
+  
   i = w/2.0 * out[index].gl_Position[0] + w/2.0 - (0.5);
   j = h/2.0 * out[index].gl_Position[1] + h/2.0 - (0.5);
 
