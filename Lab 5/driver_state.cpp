@@ -159,9 +159,9 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 
    for(px = 0; px < w; px++){
 	for(py = 0; py < h; py++){
-		AREApbc = 0.5 * (((bx*cy) - (cx*by)) - ((px*cy) - (cx*py)) - ((px*by)-(bx*py)));
-   		AREAapc = 0.5 * (((px*cy) - (cx*py)) - ((ax*cy) - (cx*ay)) - ((ax*py)-(px*ay)));
-   		AREAabp = 0.5 * (((bx*py) - (px*by)) - ((ax*py) - (px*ay)) - ((ax*by)-(bx*ay)));
+		AREApbc = 0.5 * (((bx*cy) - (cx*by)) + ((px*cy) - (cx*py)) + ((px*by)-(bx*py)));
+   		AREAapc = 0.5 * (((px*cy) - (cx*py)) + ((ax*cy) - (cx*ay)) + ((ax*py)-(px*ay)));
+   		AREAabp = 0.5 * (((bx*py) - (px*by)) + ((ax*py) - (px*ay)) + ((ax*by)-(bx*ay)));
 		
 		alpha = AREApbc / AREAabc;
 		beta = AREAapc / AREAabc;
