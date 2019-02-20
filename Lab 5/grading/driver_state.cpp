@@ -157,12 +157,18 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
    //AREAabc = 0.5 * (ax * (by - cy)) + (bx * (cy - ay)) + (cx * (ay - by));
    AREAabc = 0.5 * (((bx*cy) - (cx*by))-((ax*cy) - (cx*ay)) - ((ax*by)-(bx*ay)));
 
+   //std::cout << AREAabc << std::endl;
+
+
    for(px = 0; px < w; px++){
 	for(py = 0; py < h; py++){
-		AREApbc = 0.5 * (((bx*cy) - (cx*by)) + ((px*cy) - (cx*py)) + ((px*by)-(bx*py)));
-   		AREAapc = 0.5 * (((px*cy) - (cx*py)) + ((ax*cy) - (cx*ay)) + ((ax*py)-(px*ay)));
-   		AREAabp = 0.5 * (((bx*py) - (px*by)) + ((ax*py) - (px*ay)) + ((ax*by)-(bx*ay)));
-		
+		//AREApbc = 0.5 * (((bx*cy) - (cx*by)) - ((px*cy) - (cx*py)) - ((px*by)-(bx*py)));
+		AREApbc = 0.5 * (((bx*cy) - (cx*by)) + ((by-cy)*px) + ((cx-bx)*py));
+   		//AREAapc = 0.5 * (((px*cy) - (cx*py)) - ((ax*cy) - (cx*ay)) - ((ax*py)-(px*ay)));
+		AREAapc = 0.5 * (((ax*cy) - (cx*ay)) + ((cy-ay)*px) + ((ax-cx)*py));
+   		//AREAabp = 0.5 * (((bx*py) - (px*by)) - ((ax*py) - (px*ay)) - ((ax*by)-(bx*ay)));
+		AREAabp = 0.5 * (((ax*by) - (bx*ay)) + ((ay-by)*px) + ((bx-ax)*py));		
+
 		alpha = AREApbc / AREAabc;
 		beta = AREAapc / AREAabc;
 		gamma = AREAabp / AREAabc;
