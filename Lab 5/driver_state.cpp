@@ -92,7 +92,7 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 	v->data = in[i]->data;
 	const data_vertex* constV = v;
 	
-	state.vertex_shader(*constV, out[i], state.uniform_data);	
+	sstate.vertex_shader(*constV, out[i], state.uniform_data);	
    }  
     std::cout<<"TODO: implement rasterization"<<std::endl;
 }
