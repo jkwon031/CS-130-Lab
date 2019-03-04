@@ -61,18 +61,19 @@ void render(driver_state& state, render_type type)
 				tri[j] = new data_geometry;
 				data_vertex v;
 				v.data = new float[MAX_FLOATS_PER_VERTEX];
+				tri[j]->data = new float[MAX_FLOATS_PER_VERTEX];
 				for(int k = 0; k < state.floats_per_vertex; k++){
-				/*tri[0]->data[j] = state.vertex_data[j + (state.floats_per_vertex * i)];
-				tri[1]->data[j] = state.vertex_data[j + (state.floats_per_vertex * (i + 1))];
-				tri[2]->data[j] = state.vertex_data[j + (state.floats_per_vertex * (i + 2))];*/
+					/*tri[0]->data[j] = state.vertex_data[j + (state.floats_per_vertex * i)];
+					tri[1]->data[j] = state.vertex_data[j + (state.floats_per_vertex * (i + 1))];
+					tri[2]->data[j] = state.vertex_data[j + (state.floats_per_vertex * (i + 2))];*/
 
-		//	for(int k = 0; k < 3; k++){
-		//		const_cast<data_geometry*>(tmp[0])->data = new float[MAX_FLOATS_PER_VERTEX];
-		//		const_cast<data_geometry*>(tmp[1])->data = new float[MAX_FLOATS_PER_VERTEX];
-		//		const_cast<data_geometry*>(tmp[2])->data = new float[MAX_FLOATS_PER_VERTEX];
+					//for(int k = 0; k < 3; k++){
+					//const_cast<data_geometry*>(tmp[0])->data = new float[MAX_FLOATS_PER_VERTEX];
+					//const_cast<data_geometry*>(tmp[1])->data = new float[MAX_FLOATS_PER_VERTEX];
+					//const_cast<data_geometry*>(tmp[2])->data = new float[MAX_FLOATS_PER_VERTEX];
 					
 					v.data[k] = state.vertex_data[k + (state.floats_per_vertex * (i + j))];
-
+					tri[j]->data[k] = v.data[k];
 				}
 				state.vertex_shader((const data_vertex)v, *tri[j], state.uniform_data);
 			}
@@ -117,7 +118,7 @@ void render(driver_state& state, render_type type)
 		break;
 	}
     }
-    std::cout<<"TODO: implement rendering."<<std::endl;
+  //  std::cout<<"TODO: implement rendering."<<std::endl;
 }
 
 
@@ -132,7 +133,7 @@ void clip_triangle(driver_state& state, const data_geometry* in[3],int face)
         rasterize_triangle(state, in);
         return;
     }
-    std::cout<<"TODO: implement clipping. (The current code passes the triangle through without clipping them.)"<<std::endl;
+  //  std::cout<<"TODO: implement clipping. (The current code passes the triangle through without clipping them.)"<<std::endl;
     clip_triangle(state,in,face+1);
 }
 
@@ -145,17 +146,8 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
    int w = state.image_width;
    int h = state.image_height;
 
-   int x[3];
-   int y[3];
-
-   int min_x = w - 1;
-   int min_y = h - 1;
-   int max_x = 0;
-   int max_y = 0;
-
    int i = 0;
    int j = 0;
-   unsigned int image_index = 0;
 
    int ax = 0;
    int ay = 0;
@@ -175,17 +167,9 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
    float alpha = 0;
    float beta = 0;
    float gamma = 0;
-
-//   data_vertex v;
    
    for(int index = 0; index < 3; index++){
-//	v.data = in[index]->data;
-
-//	state.vertex_shader(v, out[index], state.uniform_data);
-	//std::cout << *in[0]->data << std::endl;
-	//for(int k = 0; k < 3; k++){
 	out[index] = *in[index];
-	//}
 
 	out[index].gl_Position[0] /= out[index].gl_Position[3];
 	out[index].gl_Position[1] /= out[index].gl_Position[3];
@@ -193,8 +177,8 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 	i = w/2.0 * out[index].gl_Position[0] + w/2.0 - (0.5);
 	j = h/2.0 * out[index].gl_Position[1] + h/2.0 - (0.5);
 
-	image_index = i + j * w;
-	state.image_color[image_index] = make_pixel(255, 255, 255);
+	int image_index = i + j * w;
+	//state.image_color[image_index] = make_pixel(255, 255, 255);
    }
 
 
@@ -230,28 +214,39 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 
 		//std::cout << alpha << " " << beta << " " << gamma << std::endl;		
 
-		image_index = px + py * w;
-
 		if(alpha >= 0 && beta >= 0 && gamma >= 0){
-			state.image_color[image_index] = make_pixel(255, 255, 255);
+			//state.image_color[image_index] = make_pixel(255, 255, 255);
+			int image_index = px + py * w;
+			auto *data = new float[MAX_FLOATS_PER_VERTEX];
+			data_fragment frag{data};
+			data_output out;
+
+			for(int findex = 0; findex < state.floats_per_vertex; findex++){
+				float fl;
+				switch(state.interp_rules[findex]){
+					case interp_type::flat:
+						frag.data[findex] = in[0]->data[findex];
+						break;
+					case interp_type::smooth:
+						fl = (alpha/in[0]->gl_Position[3] + beta/in[1]->gl_Position[3] + gamma/in[2]->gl_Position[3]);
+						alpha /= (fl * (in[0]->gl_Position[3]));
+						beta /= (fl * (in[1]->gl_Position[3]));
+						gamma /= (fl * (in[2]->gl_Position[3]));
+						break;
+					case interp_type::noperspective:
+						frag.data[findex] = alpha*in[0]->data[findex] + beta*in[1]->data[findex] + gamma*in[2]->data[findex];
+						break;
+					default:
+						break;
+				}
+			}
+			state.fragment_shader((const data_fragment)frag, out, state.uniform_data);
+			out.output_color *= 255;
+
+			state.image_color[image_index] = make_pixel(out.output_color[0], out.output_color[1], out.output_color[2]);
 		}
 	}
    }
-
-   /*AREAabc = 0.5 * (ax * (by - cy)) + (bx * (cy - ay)) + (cx * (ay - by));
-
-   AREApbc = 0.5 * (px * (by - cy)) + (bx * (cy - py)) + (cx * (px - by));
-   AREAapc = 0.5 * (ax * (py - cy)) + (px * (cy - ay)) + (cx * (ay - py));
-   AREAabp = 0.5 * (ax * (by - py)) + (bx * (py - ay)) + (px * (ay - by));
- 
-   alpha = AREApbc / AREAabc;
-   beta = AREAapc / AREAabc;
-   gamma = AREAabp / AREAabc;
-
-   if(alpha >= 0 && beta >= 0 && gamma >= 0){
-	state.image_color[image_index] = make_pixel(255, 255, 255);	
-   }		
-   */
-std::cout<<"TODO: implement rasterization"<<std::endl;
+//std::cout<<"TODO: implement rasterization"<<std::endl;
 
 }
