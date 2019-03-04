@@ -178,7 +178,7 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 	j = h/2.0 * out[index].gl_Position[1] + h/2.0 - (0.5);
 
 	int image_index = i + j * w;
-	state.image_color[image_index] = make_pixel(255, 255, 255);
+	//state.image_color[image_index] = make_pixel(255, 255, 255);
    }
 
 
