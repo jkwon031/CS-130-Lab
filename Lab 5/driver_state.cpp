@@ -178,7 +178,7 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 	j = h/2.0 * out[index].gl_Position[1] + h/2.0 - (0.5);
 
 	int image_index = i + j * w;
-	//state.image_color[image_index] = make_pixel(255, 255, 255);
+	state.image_color[image_index] = make_pixel(255, 255, 255);
    }
 
 
@@ -219,31 +219,31 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 			int image_index = px + py * w;
 			auto *data = new float[MAX_FLOATS_PER_VERTEX];
 			data_fragment frag{data};
-			data_output out;
+			data_output o;
 
 			for(int findex = 0; findex < state.floats_per_vertex; findex++){
 				float fl;
 				switch(state.interp_rules[findex]){
 					case interp_type::flat:
-						frag.data[findex] = in[0]->data[findex];
+						frag.data[findex] = out[0].data[findex];
 						break;
 					case interp_type::smooth:
-						fl = (alpha/in[0]->gl_Position[3] + beta/in[1]->gl_Position[3] + gamma/in[2]->gl_Position[3]);
-						alpha /= (fl * (in[0]->gl_Position[3]));
-						beta /= (fl * (in[1]->gl_Position[3]));
-						gamma /= (fl * (in[2]->gl_Position[3]));
+						fl = (alpha/out[0].gl_Position[3] + beta/out[1].gl_Position[3] + gamma/out[2].gl_Position[3]);
+						alpha /= (fl * (out[0].gl_Position[3]));
+						beta /= (fl * (out[1].gl_Position[3]));
+						gamma /= (fl * (out[2].gl_Position[3]));
 						break;
 					case interp_type::noperspective:
-						frag.data[findex] = alpha*in[0]->data[findex] + beta*in[1]->data[findex] + gamma*in[2]->data[findex];
+						frag.data[findex] = alpha*out[0].data[findex] + beta*out[1].data[findex] + gamma*out[2].data[findex];
 						break;
 					default:
 						break;
 				}
 			}
-			state.fragment_shader((const data_fragment)frag, out, state.uniform_data);
-			out.output_color *= 255;
+			state.fragment_shader((const data_fragment)frag, o, state.uniform_data);
+			o.output_color *= 255;
 
-			state.image_color[image_index] = make_pixel(out.output_color[0], out.output_color[1], out.output_color[2]);
+			state.image_color[image_index] = make_pixel(o.output_color[0], o.output_color[1], o.output_color[2]);
 		}
 	}
    }
