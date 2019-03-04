@@ -43,32 +43,65 @@ void render(driver_state& state, render_type type)
 	case render_type::triangle: {
 
 		for(int i = 0; i < state.num_vertices; i += 3){
-			const data_geometry** tri = new const data_geometry*[3];
-	
-			tri[0] = new data_geometry;
-			tri[1] = new data_geometry;
-			tri[2] = new data_geometry;
+			data_geometry** tri = new data_geometry*[3];
+	//		data_geometry* tmp = new data_geometry[3];
+	//		data_geometry** triangle = new data_geometry*[3];
+
+		//	tri[0] = new data_geometry;
+		//	tri[1] = new data_geometry;
+		//	tri[2] = new data_geometry;
 
 
-			const_cast<data_geometry*>(tri[0])->data = new float[MAX_FLOATS_PER_VERTEX];
-			const_cast<data_geometry*>(tri[1])->data = new float[MAX_FLOATS_PER_VERTEX];
-			const_cast<data_geometry*>(tri[2])->data = new float[MAX_FLOATS_PER_VERTEX];
-			for(int j = 0; j < state.floats_per_vertex; j++){
-				tri[0]->data[j] = state.vertex_data[j + (state.floats_per_vertex * i)];
+		//	const_cast<data_geometry*>(tri[0])->data = new float[MAX_FLOATS_PER_VERTEX];
+		//	const_cast<data_geometry*>(tri[1])->data = new float[MAX_FLOATS_PER_VERTEX];
+		//	const_cast<data_geometry*>(tri[2])->data = new float[MAX_FLOATS_PER_VERTEX];
+			
+			for(int j = 0; j < 3; j++){
+
+				tri[j] = new data_geometry;
+				data_vertex v;
+				v.data = new float[MAX_FLOATS_PER_VERTEX];
+				for(int k = 0; k < state.floats_per_vertex; k++){
+				/*tri[0]->data[j] = state.vertex_data[j + (state.floats_per_vertex * i)];
 				tri[1]->data[j] = state.vertex_data[j + (state.floats_per_vertex * (i + 1))];
-				tri[2]->data[j] = state.vertex_data[j + (state.floats_per_vertex * (i + 2))];
+				tri[2]->data[j] = state.vertex_data[j + (state.floats_per_vertex * (i + 2))];*/
+
+		//	for(int k = 0; k < 3; k++){
+		//		const_cast<data_geometry*>(tmp[0])->data = new float[MAX_FLOATS_PER_VERTEX];
+		//		const_cast<data_geometry*>(tmp[1])->data = new float[MAX_FLOATS_PER_VERTEX];
+		//		const_cast<data_geometry*>(tmp[2])->data = new float[MAX_FLOATS_PER_VERTEX];
+					
+					v.data[k] = state.vertex_data[k + (state.floats_per_vertex * (i + j))];
+
+				}
+				state.vertex_shader((const data_vertex)v, *tri[j], state.uniform_data);
 			}
 
-			rasterize_triangle(state,tri);
-			
-			delete [] tri[0]->data;
+			//state.vertex_shader(tri[0], tmp[0], state.uniform_data);
+			//state.vertex_shader(tri[1], tmp[1], state.uniform_data);
+			//state.vertex_shader(tri[2], tmp[2], state.uniform_data);
+
+			//for(int k = 0; k < 3; k++){
+				//triangle[i] = &tmp[i];
+			//}
+
+			rasterize_triangle(state,(const data_geometry**)tri);
+		}
+		/*	delete [] tri[0]->data;
 			delete [] tri[1]->data;
 			delete [] tri[2]->data;
 			delete tri[0];
 			delete tri[1];
 			delete tri[2];
 			delete [] tri;
-		}
+			delete [] tmp;
+			//delete [] triangle[0]->data;
+			//delete [] triangle[1]->data;
+			//delete [] triangle[2]->data;
+			delete triangle[0];
+			delete triangle[1];
+			delete triangle[2];
+			delete [] triangle;*/
 		break;
 	}		
 	case render_type::indexed:{
@@ -143,12 +176,16 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
    float beta = 0;
    float gamma = 0;
 
-   data_vertex v;
+//   data_vertex v;
    
    for(int index = 0; index < 3; index++){
-	v.data = in[index]->data;
+//	v.data = in[index]->data;
 
-	state.vertex_shader(v, out[index], state.uniform_data);
+//	state.vertex_shader(v, out[index], state.uniform_data);
+	//std::cout << *in[0]->data << std::endl;
+	//for(int k = 0; k < 3; k++){
+	out[index] = *in[index];
+	//}
 
 	out[index].gl_Position[0] /= out[index].gl_Position[3];
 	out[index].gl_Position[1] /= out[index].gl_Position[3];
