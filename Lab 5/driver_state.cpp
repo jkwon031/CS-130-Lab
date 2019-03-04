@@ -39,11 +39,30 @@ void initialize_render(driver_state& state, int width, int height)
 //   render_type::strip -    The vertices are to be interpreted as a triangle strip.
 void render(driver_state& state, render_type type)
 {
+	// call the vertex shader on each vertex
+	//
+	
+	data_geometry dg[num_vertices];
+	float dg_data[num_vertices*floats_per_vertex];
+
+	for(  each vertex)
+{	
+	data_vertex v;
+	v.data = vertex_data[ right spot];
+
+	dg[i].data = dg_data [ right spot];
+
+	vertex_shader(); 
+}
+
     switch(type){
 	case render_type::triangle: {
 
 		for(int i = 0; i < state.num_vertices; i += 3){
-			data_geometry** tri = new data_geometry*[3];
+	data_geometry* tri[3];
+	tri[0] = &dg[i+0];
+			
+data_geometry** tri = new data_geometry*[3];
 	//		data_geometry* tmp = new data_geometry[3];
 	//		data_geometry** triangle = new data_geometry*[3];
 
@@ -73,7 +92,7 @@ void render(driver_state& state, render_type type)
 					//const_cast<data_geometry*>(tmp[2])->data = new float[MAX_FLOATS_PER_VERTEX];
 					
 					v.data[k] = state.vertex_data[k + (state.floats_per_vertex * (i + j))];
-					tri[j]->data[k] = v.data[k];
+					//tri[j]->data[k] = v.data[k];
 				}
 				state.vertex_shader((const data_vertex)v, *tri[j], state.uniform_data);
 			}
