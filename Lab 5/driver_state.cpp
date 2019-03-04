@@ -225,16 +225,16 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 				float fl;
 				switch(state.interp_rules[findex]){
 					case interp_type::flat:
-						frag.data[findex] = out[0].data[findex];
+						frag.data[findex] = in[0]->data[findex];
 						break;
 					case interp_type::smooth:
-						fl = (alpha/out[0].gl_Position[3] + beta/out[1].gl_Position[3] + gamma/out[2].gl_Position[3]);
-						alpha /= (fl * (out[0].gl_Position[3]));
-						beta /= (fl * (out[1].gl_Position[3]));
-						gamma /= (fl * (out[2].gl_Position[3]));
+						fl = (alpha/in[0]->gl_Position[3] + beta/in[1]->gl_Position[3] + gamma/in[2]->gl_Position[3]);
+						alpha /= (fl * (in[0]->gl_Position[3]));
+						beta /= (fl * (in[1]->gl_Position[3]));
+						gamma /= (fl * (in[2]->gl_Position[3]));
 						break;
 					case interp_type::noperspective:
-						frag.data[findex] = alpha*out[0].data[findex] + beta*out[1].data[findex] + gamma*out[2].data[findex];
+						frag.data[findex] = alpha*in[0]->data[findex] + beta*in[1]->data[findex] + gamma*in[2]->data[findex];
 						break;
 					default:
 						break;
