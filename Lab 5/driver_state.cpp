@@ -275,8 +275,9 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 		//	int image_index = px + py * w;
 		//	if(state.image_depth[px + py * w] > zdep){
 			//state.image_color[image_index] = make_pixel(255, 255, 255);
-				auto *data = new float[MAX_FLOATS_PER_VERTEX];
-				data_fragment frag{data};
+			//	auto *data = new float[MAX_FLOATS_PER_VERTEX];
+				data_fragment frag;
+				frag.data = new float[state.floats_per_vertex];
 				//frag.data = new float[state.floats_per_vertex];
 			//data_fragment frag{data};
 				data_output o;
