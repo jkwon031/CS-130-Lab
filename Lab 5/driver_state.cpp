@@ -70,6 +70,7 @@ void render(driver_state& state, render_type type)
 				dv[j].data = &state.vertex_data[index];
 				dg[j].data = dv[j].data;
 				state.vertex_shader(dv[j], dg[j], state.uniform_data);
+				dgarr[j] = &dg[j];
 				index += state.floats_per_vertex;
 			}
 			rasterize_triangle(state, dgarr);
@@ -178,8 +179,8 @@ void clip_triangle(driver_state& state, const data_geometry* in[3],int face)
 void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 {
  //  data_geometry* out;
-   float w = state.image_width;
-   float h = state.image_height;
+   int w = state.image_width;
+   int h = state.image_height;
 
 //   int i = 0;
   // int j = 0;
@@ -191,8 +192,8 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
    float cx = 0;
    float cy = 0;
 
-   float px = 0;
-   float py = 0;
+   int px = 0;
+   int py = 0;
 
    float AREAabc = 0;
    float AREApbc = 0;
@@ -202,6 +203,10 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
    float alpha = 0;
    float beta = 0;
    float gamma = 0;
+   
+   float alphp = 0;
+   float betp = 0;
+   float gamp = 0;
    
  //  for(int index = 0; index < 3; index++){
 	//out[index] = in[index];
@@ -243,7 +248,7 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
    //std::cout << ax << " " << ay << " " << bx << " " << by << " " << cx << " " << cy << std::endl;
 
    //AREAabc = 0.5 * (ax * (by - cy)) + (bx * (cy - ay)) + (cx * (ay - by));
-   AREAabc = 0.5 * (((bx*cy) - (cx*by))-((ax*cy) - (cx*ay)) + ((ax*by)-(bx*ay)));
+   AREAabc = 0.5 * (((bx*cy)-(cx*by)) - ((ax*cy)-(cx*ay)) + ((ax*by)-(bx*ay)));
 
    //std::cout << AREAabc << std::endl;
 
@@ -262,41 +267,48 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 		gamma = AREAabp / AREAabc;
 
 
-		std::cout << alpha << " " << beta << " " << gamma << std::endl;		
+//		std::cout << alpha << " " << beta << " " << gamma << std::endl;		
 
 		if(alpha >= 0 && beta >= 0 && gamma >= 0){
+			float zdep = (alpha * (in[0]->gl_Position[2] / in[0]->gl_Position[3])) + (beta * (in[1]->gl_Position[2] / in[1]->gl_Position[3])) + 
+					(gamma * (in[2]->gl_Position[2] / in[2]->gl_Position[3]));
+		//	int image_index = px + py * w;
+			if(state.image_depth[px + py * w] > zdep){
 			//state.image_color[image_index] = make_pixel(255, 255, 255);
-			int image_index = px + py * w;
-			auto *data = new float[MAX_FLOATS_PER_VERTEX];
-			data_fragment frag{data};
-			data_output o;
+				auto *data = new float[MAX_FLOATS_PER_VERTEX];
+				data_fragment frag{data};
+				//frag.data = new float[state.floats_per_vertex];
+			//data_fragment frag{data};
+				data_output o;
 
-			for(int findex = 0; findex < state.floats_per_vertex; findex++){
-				float fl;
-				switch(state.interp_rules[findex]){
-					case interp_type::flat:
-						frag.data[findex] = in[0]->data[findex];
-						break;
-					case interp_type::smooth:
-						fl = (alpha/in[0]->gl_Position[3] + beta/in[1]->gl_Position[3] + gamma/in[2]->gl_Position[3]);
-						alpha /= (fl * (in[0]->gl_Position[3]));
-						beta /= (fl * (in[1]->gl_Position[3]));
-						gamma /= (fl * (in[2]->gl_Position[3]));
-						break;
-					case interp_type::noperspective:
-						frag.data[findex] = alpha*in[0]->data[findex] + beta*in[1]->data[findex] + gamma*in[2]->data[findex];
-						break;
-					default:
-						break;
+				for(int findex = 0; findex < state.floats_per_vertex; findex++){
+					float fl;
+					switch(state.interp_rules[findex]){
+						case interp_type::flat:
+							frag.data[findex] = in[0]->data[findex];
+							break;
+						case interp_type::smooth:
+							fl = (alpha/in[0]->gl_Position[3]) +(beta/in[1]->gl_Position[3]) + (gamma/in[2]->gl_Position[3]);
+							alphp = alpha / (fl * in[0]->gl_Position[3]);
+							betp = beta / (fl * in[1]->gl_Position[3]);
+							gamp = gamma / (fl * in[2]->gl_Position[3]);
+							frag.data[findex] = (alphp * in[0]->data[findex]) + (betp * in[1]->data[findex]) + (gamp * in[2]->data[findex]);
+							break;
+						case interp_type::noperspective:
+							frag.data[findex] = alpha*in[0]->data[findex] + beta*in[1]->data[findex] + gamma*in[2]->data[findex];
+							break;
+						default:
+							break;
+					}
 				}
-			}
-			state.fragment_shader((const data_fragment)frag, o, state.uniform_data);
-			o.output_color *= 255;
+				state.fragment_shader(frag, o, state.uniform_data);
+				//o.output_color *= 255;
 
-			state.image_color[image_index] = make_pixel(o.output_color[0], o.output_color[1], o.output_color[2]);
+				state.image_color[px + py * w] = make_pixel(o.output_color[0] * 255, o.output_color[1] * 255, o.output_color[2] * 255);
+				state.image_depth[px + py * w] = zdep;
+			}
 		}
 	}
-   }
 //std::cout<<"TODO: implement rasterization"<<std::endl;
-
+}
 }
