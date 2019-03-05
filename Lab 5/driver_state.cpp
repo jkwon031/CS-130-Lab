@@ -247,7 +247,7 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 		gamma = AREAabp / AREAabc;
 
 
-		//std::cout << alpha << " " << beta << " " << gamma << std::endl;		
+		std::cout << alpha << " " << beta << " " << gamma << std::endl;		
 
 		if(alpha >= 0 && beta >= 0 && gamma >= 0){
 			//state.image_color[image_index] = make_pixel(255, 255, 255);
