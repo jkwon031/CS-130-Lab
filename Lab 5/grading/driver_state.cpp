@@ -243,7 +243,7 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
    //std::cout << ax << " " << ay << " " << bx << " " << by << " " << cx << " " << cy << std::endl;
 
    //AREAabc = 0.5 * (ax * (by - cy)) + (bx * (cy - ay)) + (cx * (ay - by));
-   AREAabc = 0.5 * (((bx*cy) - (cx*by))-((ax*cy) - (cx*ay)) - ((ax*by)-(bx*ay)));
+   AREAabc = 0.5 * (((bx*cy) - (cx*by))-((ax*cy) - (cx*ay)) + ((ax*by)-(bx*ay)));
 
    //std::cout << AREAabc << std::endl;
 
