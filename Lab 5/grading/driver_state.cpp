@@ -270,10 +270,10 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 //		std::cout << alpha << " " << beta << " " << gamma << std::endl;		
 
 		if(alpha >= 0 && beta >= 0 && gamma >= 0){
-			float zdep = (alpha * (in[0]->gl_Position[2] / in[0]->gl_Position[3])) + (beta * (in[1]->gl_Position[2] / in[1]->gl_Position[3])) + 
+	//		float zdep = (alpha * (in[0]->gl_Position[2] / in[0]->gl_Position[3])) + (beta * (in[1]->gl_Position[2] / in[1]->gl_Position[3])) + 
 					(gamma * (in[2]->gl_Position[2] / in[2]->gl_Position[3]));
 		//	int image_index = px + py * w;
-			if(state.image_depth[px + py * w] > zdep){
+		//	if(state.image_depth[px + py * w] > zdep){
 			//state.image_color[image_index] = make_pixel(255, 255, 255);
 				auto *data = new float[MAX_FLOATS_PER_VERTEX];
 				data_fragment frag{data};
@@ -305,8 +305,8 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 				//o.output_color *= 255;
 
 				state.image_color[px + py * w] = make_pixel(o.output_color[0] * 255, o.output_color[1] * 255, o.output_color[2] * 255);
-				state.image_depth[px + py * w] = zdep;
-			}
+		//		state.image_depth[px + py * w] = zdep;
+			//}
 		}
 	}
 //std::cout<<"TODO: implement rasterization"<<std::endl;
