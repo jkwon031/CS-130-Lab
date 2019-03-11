@@ -171,8 +171,8 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
    float cx = 0;
    float cy = 0;
 
-   int px = 0;
-   int py = 0;
+   float px = 0;
+   float py = 0;
 
    float AREAabc = 0;
    float AREApbc = 0;
@@ -196,20 +196,20 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 
    //std::cout << ax << " " << ay << " " << bx << " " << by << " " << cx << " " << cy << std::endl;
 
-   AREAabc = 0.5 * (((bx*cy)-(cx*by)) - ((ax*cy)-(cx*ay)) + ((ax*by)-(bx*ay)));
-
+    AREAabc = 0.5 * (((bx*cy)-(cx*by)) - ((ax*cy)-(cx*ay)) + ((ax*by)-(bx*ay)));
+   // AREAabc = (cx - ax) * (by - ay) - (cy - ay) * (bx - ax);
    //std::cout << AREAabc << std::endl;
 
 
    for(px = 0; px < w; px++){
 	for(py = 0; py < h; py++){
 		int index = px * py + w;
-		//AREApbc = 0.5 * (((bx*cy) - (cx*by)) - ((px*cy) - (cx*py)) - ((px*by)-(bx*py)));
 		AREApbc = 0.5 * (((bx*cy) - (cx*by)) + ((by-cy)*px) + ((cx-bx)*py));
-   		//AREAapc = 0.5 * (((px*cy) - (cx*py)) - ((ax*cy) - (cx*ay)) - ((ax*py)-(px*ay)));
+   		//AREApbc = (px - bx) * (cy - by) - (py - by) * (cx - bx);
 		AREAapc = 0.5 * (((cx*ay) - (ax*cy)) + ((cy-ay)*px) + ((ax-cx)*py));
-   		//AREAabp = 0.5 * (((bx*py) - (px*by)) - ((ax*py) - (px*ay)) - ((ax*by)-(bx*ay)));
-		AREAabp = 0.5 * (((ax*by) - (bx*ay)) + ((ay-by)*px) + ((bx-ax)*py));		
+		//AREAapc = (px - cx) * (ay - cy) - (py - cy) * (ax - cx);
+		AREAabp = 0.5 * (((ax*by) - (bx*ay)) + ((ay-by)*px) + ((bx-ax)*py));
+		//AREAabp = (px - ax) * (by - ay) - (py - ay) * (bx - ax);		
 
 		alpha = AREApbc / AREAabc;
 		beta = AREAapc / AREAabc;
@@ -233,9 +233,9 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 							break;
 						case interp_type::smooth:
 							fl = (alpha/in[0]->gl_Position[3]) +(beta/in[1]->gl_Position[3]) + (gamma/in[2]->gl_Position[3]);
-							alphp = alpha / (fl * in[0]->gl_Position[3]);
-							betp = beta / (fl * in[1]->gl_Position[3]);
-							gamp = gamma / (fl * in[2]->gl_Position[3]);
+							alphp = alpha /  in[0]->gl_Position[3] / fl;
+							betp = beta / in[1]->gl_Position[3] / fl;
+							gamp = gamma / in[2]->gl_Position[3] / fl;
 							frag.data[findex] = (alphp * in[0]->data[findex]) + (betp * in[1]->data[findex]) + (gamp * in[2]->data[findex]);
 							break;
 						case interp_type::noperspective:
@@ -245,11 +245,11 @@ void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 							break;
 					}
 				}
-			}
-			state.fragment_shader(frag, o, state.uniform_data);
+				state.fragment_shader(frag, o, state.uniform_data);
 			
-			state.image_color[index] = make_pixel(o.output_color[0] * 255, o.output_color[1] * 255, o.output_color[2] * 255);
-			state.image_depth[index] = z_dep;
+				state.image_color[index] = make_pixel(o.output_color[0] * 255, o.output_color[1] * 255, o.output_color[2] * 255);
+				state.image_depth[index] = z_dep;
+			}
 		}
 	}
 //std::cout<<"TODO: implement rasterization"<<std::endl;
